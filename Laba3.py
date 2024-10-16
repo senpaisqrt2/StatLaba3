@@ -105,6 +105,20 @@ print(f"Наблюдаемые частоты: {observed_frequencies}")
 print(f"Ожидаемые частоты: {expected_frequencies}")
 print(f"Вычисленная chi^2: {chi2_manual_1a:.3f}")
 
+# Количество степеней свободы для задания 1а = число интервалов - 1
+df_1a = len(observed_frequencies) - 1  # Степени свободы = число групп - 1
+
+# Критическое значение chi^2 для уровня значимости alpha
+chi2_critical_1a = stats.chi2.ppf(1 - alpha, df_1a)
+
+# Вывод критического значения chi^2
+print(f"Критическое значение chi^2 для df={df_1a} и уровня значимости 0.05: {chi2_critical_1a:.3f}")
+
+# Сравнение chi^2 с критическим значением
+if chi2_manual_1a > chi2_critical_1a:
+    print("Нулевая гипотеза о нормальном распределении для исходных данных отклоняется (Задание 1а).")
+else:
+    print("Нет оснований отклонять нулевую гипотезу о нормальном распределении для исходных данных (Задание 1а).")
 
 
 # Параметры выборки для выборочных средних
@@ -162,6 +176,7 @@ chi2_manual_1b = np.sum((observed_frequencies_1b - expected_frequencies_1b) ** 2
 
 # Шаг 2: Найдем критическое значение chi^2 для задания 1б
 df_1b = len(observed_frequencies_1b) - 3  # Степени свободы = число групп - 1
+print(f"Число групп: {len(observed_frequencies_1b)}")
 chi2_critical_1b = stats.chi2.ppf(1 - alpha, df_1b)
 
 # Вывод результатов
