@@ -199,56 +199,100 @@ print(f" ")
 print(f" ")
 
 print(f"2")
-# --- Проверка гипотезы о равенстве дисперсий для Задания 2 ---
-# Генерируем две случайные выборки
-sample1 = np.random.choice(crime_ages, size=n, replace=True)
-sample2 = np.random.choice(crime_ages, size=n, replace=True)
+
+# Параметры задачи
+gamma = 0.95
+delta = 3
+
+# Стандартное отклонение выборки
+sigma = np.std(crime_ages, ddof=0)
+
+# Расчет объема выборки
+z_value = stats.norm.ppf((1 + gamma) / 2)
+
+def calculate_sample_size(sigma, delta, gamma, z_value):
+    return (z_value * sigma / delta) ** 2
+
+n = int(np.ceil(calculate_sample_size(sigma, delta, gamma, z_value)))
+
+# Генерация выборочных средних для задачи 1б
+sample_means = [np.mean(np.random.choice(crime_ages, size=n, replace=True)) for _ in range(36)]
+
+# --- Часть 2: Проверка гипотезы о равенстве дисперсий ---
+# Устанавливаем случайное начальное состояние для воспроизводимости результатов
+random_state = 42
+rng = np.random.default_rng(random_state)
+
+# --- Проверка гипотезы о равенстве дисперсий для Задания 2а ---
+# Альфа для 2а
+alpha_2a = 0.05
+
+# Генерируем две случайные выборки для 2а
+sample1 = rng.choice(crime_ages, size=n, replace=True)
+sample2 = rng.choice(crime_ages, size=n, replace=True)
 
 # Вычисление дисперсий для каждой выборки
-var1 = np.var(sample1, ddof=1)
-var2 = np.var(sample2, ddof=1)
+var1_2a = np.var(sample1, ddof=1)
+var2_2a = np.var(sample2, ddof=1)
 
 # Вывод дисперсий для каждой выборки
-print(f"Дисперсия первой выборки: {var1}")
-print(f"Дисперсия второй выборки: {var2}")
+print(f"Дисперсия первой выборки (2а): {var1_2a}")
+print(f"Дисперсия второй выборки (2а): {var2_2a}")
 
 # Применение критерия Фишера для проверки гипотезы о равенстве дисперсий
-f_stat = var1 / var2 if var1 > var2 else var2 / var1  # Рассчитываем F-статистику
-df1 = len(sample1) - 1  # Степени свободы для первой выборки
-df2 = len(sample2) - 1  # Степени свободы для второй выборки
-p_value_f = 1 - stats.f.cdf(f_stat, df1, df2)  # Вычисляем p-value для F-критерия
+f_stat_2a = var1_2a / var2_2a if var1_2a > var2_2a else var2_2a / var1_2a  # Рассчитываем F-статистику
+df1_2a = len(sample1) - 1  # Степени свободы для первой выборки
+df2_2a = len(sample2) - 1  # Степени свободы для второй выборки
+p_value_f_2a = 1 - stats.f.cdf(f_stat_2a, df1_2a, df2_2a)  # Вычисляем p-value для F-критерия
 
-# Вывод результатов критерия Фишера
-print("\nКритерий Фишера для проверки равенства дисперсий:")
-print(f"F-статистика: {f_stat}")
-print(f"p-value: {p_value_f}")
+# Критическое значение F для 2а
+f_critical_2a = stats.f.ppf(1 - alpha_2a, df1_2a, df2_2a)
 
-# Принятие или отклонение гипотезы о равенстве дисперсий
-if p_value_f < alpha:
-    print("Нулевая гипотеза о равенстве дисперсий отклоняется.")
+# Вывод результатов для 2а
+print("\nКритерий Фишера для проверки равенства дисперсий (Задание 2а):")
+print(f"F-статистика: {f_stat_2a}")
+print(f"p-value: {p_value_f_2a}")
+print(f"Критическое значение F: {f_critical_2a}")
+
+# Принятие или отклонение гипотезы о равенстве дисперсий для 2а
+if f_stat_2a > f_critical_2a:
+    print("Нулевая гипотеза о равенстве дисперсий отклоняется (Задание 2а).")
 else:
-    print("Нет оснований отклонять нулевую гипотезу о равенстве дисперсий.")
+    print("Нет оснований отклонять нулевую гипотезу о равенстве дисперсий (Задание 2а).")
 
-# Дополнительные выводы
-print("\nСреднее значение возраста (по выборочным средним):", mean_sample)
-print("Стандартное отклонение выборочных средних:", std_sample)
+# --- Проверка гипотезы о равенстве дисперсий для Задания 2б ---
+# Альфа для 2б
+alpha_2b = 0.025
 
-# --- Расчет и сравнение chi^2 для проверки гипотезы о равенстве дисперсий ---
+# Генерируем две новые случайные выборки для 2б
+sample1_2b = rng.choice(crime_ages, size=n, replace=True)
+sample2_2b = rng.choice(crime_ages, size=n, replace=True)
 
-# Рассчитываем chi^2 для проверки равенства дисперсий
-# Формула для chi^2: (n - 1) * (disperсия первой выборки / дисперсия второй выборки)
-chi2_stat = (len(sample1) - 1) * (var1 / var2)
+# Вычисление дисперсий для каждой выборки
+var1_2b = np.var(sample1_2b, ddof=1)
+var2_2b = np.var(sample2_2b, ddof=1)
 
-# Рассчитываем критическое значение chi^2 для уровня значимости alpha
-chi2_critical = stats.chi2.ppf(1 - alpha, df1)
+# Вывод дисперсий для каждой выборки
+print(f"\nДисперсия первой выборки (2б): {var1_2b}")
+print(f"Дисперсия второй выборки (2б): {var2_2b}")
 
-# Вывод chi^2 и критического значения
-print(f"\nВычисленное chi^2: {chi2_stat}")
-print(f"Критическое значение chi^2: {chi2_critical}")
+# Применение критерия Фишера для 2б
+f_stat_2b = var1_2b / var2_2b if var1_2b > var2_2b else var2_2b / var1_2b  # Рассчитываем F-статистику
+df1_2b = len(sample1_2b) - 1  # Степени свободы для первой выборки
+df2_2b = len(sample2_2b) - 1  # Степени свободы для второй выборки
+p_value_f_2b = 1 - stats.f.cdf(f_stat_2b, df1_2b, df2_2b)  # Вычисляем p-value для F-критерия
 
-# Сравнение chi^2 с критическим значением
-if chi2_stat > chi2_critical:
-    print("Нулевая гипотеза о равенстве дисперсий отклоняется на основе chi^2.")
+# Критическое значение F для 2б
+f_critical_2b = stats.f.ppf(1 - alpha_2b, df1_2b, df2_2b)
+
+# Вывод результатов для 2б
+print("\nКритерий Фишера для проверки равенства дисперсий (Задание 2б):")
+print(f"F-статистика: {f_stat_2b}")
+print(f"p-value: {p_value_f_2b}")
+print(f"Критическое значение F: {f_critical_2b}")
+
+# Принятие или отклонение гипотезы о равенстве дисперсий для 2б
+if f_stat_2b > f_critical_2b:
+    print("Нулевая гипотеза о равенстве дисперсий отклоняется (Задание 2б).")
 else:
-    print("Нет оснований отклонять нулевую гипотезу о равенстве дисперсий на основе chi^2.")
-
+    print("Нет оснований отклонять нулевую гипотезу о равенстве дисперсий (Задание 2б).")
